@@ -34,7 +34,7 @@ add_action('wp_head', 'webling_css');
 function webling_memberlist_handler() {
 	$output = webling_liste();
 
-	return '<div id="webling_memberlist">'.$output.'<div>';
+	return '<div id="webling_memberlist">'.$output.'</div>';
 }
 
 function webling_get_data($url) {
