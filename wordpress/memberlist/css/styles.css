@@ -5,3 +5,6 @@
 #webling-memberlist td {
 	padding: 0 5px;
 }
+
+#webling-memberlist {margin: 10px;}
+#webling-memberlist td {padding: 10px; border-top: 1px solid grey;}
