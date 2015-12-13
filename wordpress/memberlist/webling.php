@@ -48,38 +48,49 @@ function webling_get_data($url) {
 
 function webling_liste() {
 
-	$options = webling_get_config();
-
+    $options = webling_get_config();
+    $filter = empty($_GET["webling-filter"]) ? "xxxxx" : $_GET["webling-filter"];
+    
     try {
+        $queryFilter = "(" . webling_get_addField("Name", $filter) . " OR ". webling_get_addField("Vorname", $filter) . " OR " . webling_get_addField("Email", $filter) .")";
+        $url = $options["host"] . "/api/1/member?apikey=" . $options["apikey"] . "&query=" . urlencode($queryFilter);
+        
+        echo '<form class="webling"><input name="webling-filter" value="' . $_GET["webling-filter"]. '" /><input type="submit" value="suchen"/><div>Suchen nach: Name oder Vorname oder E-Mail</div></form>';
+        echo '<table id="webling-memberlist">';
 
-		echo '<table id="webling-memberlist">';
+                        echo '<tr>';
+                        foreach ($options['fieldarray'] as $field) {
+                                echo '<th>' . $field . '</th>';
+                        }
 
-				echo '<tr>';
-				foreach ($options['fieldarray'] as $field) {
-					echo '<th>' . $field . '</th>';
-				}
+                        echo '</tr>';
+                        $memberIds = webling_get_data($url)["objects"] ;
 
-				echo '</tr>';
+                        if (is_array($memberIds) == false) {
+                                throw new Exception("Cannot connect to API");
+                        }
 
-				$memberIds = webling_get_data($options["host"] . "/api/1/member?apikey=" . $options["apikey"])["objects"];
-
-				if (is_array($memberIds) == false) {
-					throw new Exception("Cannot connect to API");
-				}
-
-				foreach ($memberIds as $memberId) {
-					$member = webling_get_data($options["host"] . "/api/1/member/" . $memberId . "?apikey=" . $options["apikey"]);
-					echo '<tr>';
-					foreach ($options['fieldarray'] as $field) {
-						echo "<td>" . $member["properties"][$field] . "</td>";
-					}
-					echo '</tr>';
-				}
-		echo '</table>';
+                        foreach ($memberIds as $memberId) {
+                                $member = webling_get_data($options["host"] . "/api/1/member/" . $memberId . "?apikey=" . $options["apikey"]);
+                                echo '<tr>';
+                                foreach ($options['fieldarray'] as $field) {
+                                        echo "<td>" . $member["properties"][$field] . "</td>";
+                                }
+                                echo '</tr>';
+                        }
+        echo '</table>';
 
     } catch (Exception $e) {
     	echo '<p>Memberlist cannot be loaded</p>';
     }
+}
+
+function webling_get_addField($fieldname, $filter) {
+    return '"' . $fieldname . '"' . " like " . webling_get_addWildcard($filter) . " ";
+}
+
+function webling_get_addWildcard($filter) {
+    return '"*' . $filter . '*" ';
 }
 
 function webling_get_config() {
